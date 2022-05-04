@@ -1,0 +1,77 @@
+version: '3.7'
+services:
+    mysql_db_container:
+        image: mysql:latest
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_ROOT_HOST: '%'
+            #MYSQL_USER: root
+            #MYSQL_PASSWORD: root
+            MYSQL_DATABASE: db
+        ports:
+            - "3306:3306"
+        #    - "33090:33060"
+        volumes:
+            - mysql_db_data_container:/var/lib/mysql
+            - ./sql:/docker-entrypoint-initdb.d
+        networks:
+          - noxem
+
+    adminer_dg_container:
+        image: dockette/adminer:dg
+        restart: always
+        environment:
+          ADMINER_DEFAULT_SERVER: mysql_db_container
+        ports:
+          - "8085:80"
+        networks:
+          - noxem
+
+    adminer_container:
+        image: adminer:4.8.1
+        environment:
+            ADMINER_DEFAULT_SERVER: mysql_db_container
+            ADMINER_DESIGN: nicu
+            ADMINER_PLUGINS: tables-filter tinymce
+        volumes:
+        #  - ./adminer/tablesCollapse.php:/var/www/html/plugins-enabled/tablesCollapse.php
+          - ./adminer/plugins:/var/www/html/plugins-enabled/plugins
+        ports:
+            - "8081:8080"
+        networks:
+          - noxem
+
+    web:
+        image: nginx:latest
+        ports:
+            - "8005:8005"
+        volumes:
+            - ./../:/html
+            - ./nginx/site.conf:/etc/nginx/conf.d/site.conf
+        links:
+            - php
+        networks:
+          - noxem
+
+    php:
+        image: php:8.1.4-fpm
+        build:
+            context: .
+            dockerfile: ./php/Dockerfile
+        environment:
+            DOCKER_DEV: 'true'
+        volumes:
+            - ./../:/html
+        networks:
+          - noxem
+
+volumes:
+    mysql_db_data_container:
+
+
+networks:
+  noxem:
+
+
+

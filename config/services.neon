@@ -1,0 +1,21 @@
+services:
+	- App\Router\RouterFactory::createRouter
+
+extensions:
+	console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
+	dbal: Nextras\Dbal\Bridges\NetteDI\DbalExtension
+	orm: Nextras\Orm\Bridges\NetteDI\OrmExtension
+	migrations: Nextras\Migrations\Bridges\NetteDI\MigrationsExtension
+
+orm:
+	model: App\Model\ORM\Model
+
+migrations:
+	dir: %appDir%/../migrations
+	driver: mysql
+	dbal: nextras
+	withDummyData: true
+
+decorator:
+	Nextras\Orm\Repository\IRepository:
+		inject: true
